@@ -1,0 +1,5 @@
+mmpy_bot>=2.0
+openstacksdk
+click
+schema
+prometheus-api-client

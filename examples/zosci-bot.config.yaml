@@ -1,0 +1,8 @@
+config:
+  plugins:
+    - zosci_bot.plugins.PrometheusPlugin
+
+mattermost:
+  url: 'https://chat.example.com/'
+  port: 443
+  token: 'foobar'
