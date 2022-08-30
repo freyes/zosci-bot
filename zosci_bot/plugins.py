@@ -24,19 +24,18 @@ class ZOSCIBotPlugin(Plugin):
         super().__init__()
 
 
-class PrometheusPlugin(Plugin):
+class PrometheusPlugin(ZOSCIBotPlugin):
 
     SCHEDULED_INSTANCES = 'sum(hypervisor_running_vms{cloud=~"serverstack"})'
     INSTANCES_BY_STATE = ('sum by(instance_state)'
                           '(nova_instances{cloud="serverstack"})')
 
     def __init__(self, config):
+        super().__init__(config)
         self._prom = PrometheusConnect(
             url=config['prometheus']['url'],
             disable_ssl=not config['prometheus']['ssl_verify']
         )
-        self._config = config
-        super().__init__()
 
         schedule.every(1 * MINUTE).seconds.do(self.check_error_instances)
         self._prev_instances_by_state = None
@@ -51,7 +50,10 @@ class PrometheusPlugin(Plugin):
         current = cur_instances_by_state.get('ERROR', 0)
         previous = self._prev_instances_by_state.get('ERROR', 0)
         if current != previous:
-            channel = self.driver.channels.get_channel_by_name_and_team_name('myteam', 'testing')
+            channel = self.driver.channels.get_channel_by_name_and_team_name(
+                self._config['mattermost']['team'],
+                self._config['mattermost']['channel']
+            )
             if current > previous:
                 msg = f'Instances in error state went up by {current - previous} (total: {current})'
             else:
